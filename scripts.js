@@ -106,6 +106,20 @@ async function fetchVideos(apiKey, channelId) {
     }
 }
 
+// تابع extractChannelId برای استخراج شناسه کانال از لینک یا شناسه وارد شده
+function extractChannelId(input) {
+    if (input.includes("youtube.com/channel/")) {
+        return input.split("youtube.com/channel/")[1].split("/")[0];
+    } else if (input.includes("youtube.com/c/")) {
+        return input.split("youtube.com/c/")[1].split("/")[0];
+    } else if (input.includes("youtube.com/user/")) {
+        return input.split("youtube.com/user/")[1].split("/")[0];
+    } else {
+        return input.trim();
+    }
+}
+
+// رویداد کلیک برای دکمه استخراج ویدیوها
 document.getElementById("fetchVideosButton").addEventListener("click", async () => {
     const channelInput = document.getElementById("channelInput").value;
 
@@ -114,7 +128,7 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         return;
     }
 
-    const channelId = extractChannelId(channelInput);
+    const channelId = extractChannelId(channelInput); // فراخوانی تابع extractChannelId
     try {
         const videos = await fetchVideosWithRetry(channelId);
         displayVideos(videos);
@@ -124,4 +138,5 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
     }
 });
 
+// بارگذاری کلیدهای API
 loadApiKeys();
