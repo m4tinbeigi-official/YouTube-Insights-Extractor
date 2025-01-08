@@ -5,20 +5,12 @@ async function loadApiKeys() {
     try {
         const response = await fetch('api_keys.json');
         apiKeys = await response.json();
-        const apiKeySelect = document.getElementById('apiKeySelect');
-
-        apiKeys.forEach((key, index) => {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = `کلید API ${index + 1}`;
-            apiKeySelect.appendChild(option);
-        });
-
-        if (apiKeys.length > 0) {
-            apiKeySelect.value = apiKeys[0];
+        if (apiKeys.length === 0) {
+            throw new Error('کلید API یافت نشد!');
         }
     } catch (error) {
         console.error('خطا در بارگذاری کلیدهای API:', error);
+        alert('خطایی در بارگذاری کلیدهای API رخ داد. لطفاً بررسی کنید.');
     }
 }
 
@@ -28,7 +20,6 @@ function getCurrentApiKey() {
 
 function switchToNextApiKey() {
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-    document.getElementById('apiKeySelect').value = getCurrentApiKey();
 }
 
 async function fetchVideosWithRetry(channelId) {
