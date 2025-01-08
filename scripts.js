@@ -1,24 +1,50 @@
+let apiKeys = [];
+let currentKeyIndex = 0;
+
 async function loadApiKeys() {
     try {
         const response = await fetch('api_keys.json');
-        const keys = await response.json();
+        apiKeys = await response.json();
         const apiKeySelect = document.getElementById('apiKeySelect');
 
-        keys.forEach((key, index) => {
+        apiKeys.forEach((key, index) => {
             const option = document.createElement('option');
             option.value = key;
             option.textContent = `کلید API ${index + 1}`;
             apiKeySelect.appendChild(option);
         });
+
+        if (apiKeys.length > 0) {
+            apiKeySelect.value = apiKeys[0];
+        }
     } catch (error) {
         console.error('خطا در بارگذاری کلیدهای API:', error);
     }
 }
 
-function extractChannelId(input) {
-    const regex = /channel\/([\w\-]+)/;
-    const match = input.match(regex);
-    return match ? match[1] : input;
+function getCurrentApiKey() {
+    return apiKeys[currentKeyIndex];
+}
+
+function switchToNextApiKey() {
+    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+    document.getElementById('apiKeySelect').value = getCurrentApiKey();
+}
+
+async function fetchVideosWithRetry(channelId) {
+    let retries = apiKeys.length;
+    while (retries > 0) {
+        const apiKey = getCurrentApiKey();
+        try {
+            const videos = await fetchVideos(apiKey, channelId);
+            return videos;
+        } catch (error) {
+            console.warn(`خطا با کلید API ${apiKey}:`, error);
+            switchToNextApiKey();
+            retries--;
+        }
+    }
+    throw new Error('تمام کلیدهای API شکست خوردند.');
 }
 
 async function fetchVideos(apiKey, channelId) {
@@ -82,50 +108,29 @@ async function fetchVideos(apiKey, channelId) {
 
         return videos;
     } catch (error) {
-        console.error("Error fetching videos:", error);
-        return [];
+        if (error.response && error.response.status === 403) {
+            throw new Error("محدودیت API کلید فعلی");
+        }
+        throw error;
     }
-}
-
-function displayVideos(videos) {
-    const videoList = document.getElementById("videoList");
-    videoList.innerHTML = "";
-
-    if (videos.length === 0) {
-        videoList.innerHTML = '<div class="alert alert-warning">هیچ ویدیویی یافت نشد!</div>';
-        return;
-    }
-
-    videos.forEach((video) => {
-        const videoItem = document.createElement("div");
-        videoItem.classList.add("video-item", "card", "p-3");
-
-        videoItem.innerHTML = `
-            <img src="${video.thumbnail}" alt="${video.title}" class="video-thumbnail">
-            <h5 class="mt-3">${video.title}</h5>
-            <p><strong>توضیحات:</strong> ${video.description || "ندارد"}</p>
-            <p><strong>تاریخ انتشار:</strong> ${new Date(video.publishDate).toLocaleDateString()}</p>
-            <p><strong>لایک‌ها:</strong> ${video.likeCount}</p>
-            <p><strong>کامنت‌ها:</strong> ${video.commentCount}</p>
-            <a href="https://www.youtube.com/watch?v=${video.id}" target="_blank" class="btn btn-primary">مشاهده ویدیو</a>
-        `;
-
-        videoList.appendChild(videoItem);
-    });
 }
 
 document.getElementById("fetchVideosButton").addEventListener("click", async () => {
-    const apiKey = document.getElementById("apiKeySelect").value;
     const channelInput = document.getElementById("channelInput").value;
 
-    if (!apiKey || !channelInput) {
-        alert("لطفاً تمام فیلدها را پر کنید!");
+    if (!channelInput) {
+        alert("لطفاً شناسه یا لینک کانال را وارد کنید!");
         return;
     }
 
     const channelId = extractChannelId(channelInput);
-    const videos = await fetchVideos(apiKey, channelId);
-    displayVideos(videos);
+    try {
+        const videos = await fetchVideosWithRetry(channelId);
+        displayVideos(videos);
+    } catch (error) {
+        console.error(error);
+        alert("خطایی رخ داده است. لطفاً بعداً دوباره تلاش کنید.");
+    }
 });
 
 loadApiKeys();
