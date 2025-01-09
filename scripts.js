@@ -22,6 +22,15 @@ function switchToNextApiKey() {
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
 }
 
+function updateProgress(current, total) {
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const percent = Math.round((current / total) * 100);
+    progressBar.style.width = `${percent}%`;
+    progressBar.textContent = `${percent}%`;
+    progressText.textContent = `در حال پردازش ویدیو ${current} از ${total}`;
+}
+
 async function fetchVideosWithRetry(channelId) {
     let retries = apiKeys.length;
     let videos = [];
@@ -53,6 +62,8 @@ async function fetchVideos(apiKey, channelId) {
 
         let nextPageToken = "";
         const videos = [];
+        let totalVideos = 0;
+        let currentVideo = 0;
 
         do {
             const playlistResponse = await axios.get(`${youtubeAPI}/playlistItems`, {
@@ -65,7 +76,11 @@ async function fetchVideos(apiKey, channelId) {
                 },
             });
 
+            totalVideos = playlistResponse.data.pageInfo.totalResults;
             for (const item of playlistResponse.data.items) {
+                currentVideo++;
+                updateProgress(currentVideo, totalVideos);
+
                 const videoId = item.snippet.resourceId.videoId;
                 const videoTitle = item.snippet.title;
                 const thumbnailUrl = item.snippet.thumbnails.medium.url;
