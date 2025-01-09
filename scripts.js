@@ -55,13 +55,19 @@ async function fetchVideos(apiKey, channelId) {
     try {
         const channelResponse = await axios.get(`${youtubeAPI}/channels`, {
             params: {
-                part: "snippet",
+                part: "snippet,statistics",
                 id: channelId,
                 key: apiKey,
             },
         });
         channelName = channelResponse.data.items[0].snippet.title;
         channelDescription = channelResponse.data.items[0].snippet.description;
+        const subscriberCount = channelResponse.data.items[0].statistics.subscriberCount;
+        const totalViews = channelResponse.data.items[0].statistics.viewCount;
+        const channelCreationDate = channelResponse.data.items[0].snippet.publishedAt;
+
+        displayChannelInfo(channelName, channelDescription, subscriberCount, totalViews, channelCreationDate);
+        saveSearchHistory(channelId, channelName);
 
         const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
 
@@ -141,23 +147,36 @@ function extractChannelId(input) {
     }
 }
 
-function displayChannelInfo() {
+function displayChannelInfo(name, description, subscribers, views, creationDate) {
     const channelInfo = document.getElementById("channelInfo");
-    const channelNameElement = document.getElementById("channelName");
-    const channelDescriptionElement = document.getElementById("channelDescription");
-
-    channelNameElement.textContent = channelName;
-    channelDescriptionElement.textContent = channelDescription;
+    channelInfo.innerHTML = `
+        <h3>${name}</h3>
+        <p>${description}</p>
+        <p>تعداد سابسکرایبرها: ${subscribers}</p>
+        <p>تعداد کل بازدیدها: ${views}</p>
+        <p>تاریخ ایجاد کانال: ${new Date(creationDate).toLocaleDateString('fa-IR')}</p>
+    `;
     channelInfo.style.display = "block";
 }
 
-function saveToLocalStorage(channelId, data) {
-    localStorage.setItem(channelId, JSON.stringify(data));
+function saveSearchHistory(channelId, channelName) {
+    const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    if (!history.some(item => item.id === channelId)) {
+        history.push({ id: channelId, name: channelName });
+        localStorage.setItem('searchHistory', JSON.stringify(history));
+    }
+    displaySearchHistory();
 }
 
-function loadFromLocalStorage(channelId) {
-    const data = localStorage.getItem(channelId);
-    return data ? JSON.parse(data) : null;
+function displaySearchHistory() {
+    const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
+    const historyList = document.getElementById('historyList');
+    historyList.innerHTML = history.map(item => `<li><a href="#" onclick="fetchChannel('${item.id}')">${item.name}</a></li>`).join('');
+}
+
+function fetchChannel(channelId) {
+    document.getElementById('channelInput').value = channelId;
+    document.getElementById('fetchVideosButton').click();
 }
 
 function displayVideos(videos) {
@@ -175,8 +194,8 @@ function displayVideos(videos) {
             { data: "thumbnail", title: "تصویر", render: function(data) {
                 return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو">`;
             }},
-            { data: "id", title: "لینک ویدیو", render: function(data) {
-                return `<a href="https://www.youtube.com/watch?v=${data}" target="_blank">پخش ویدیو</a>`;
+            { data: "id", title: "پیش‌نمایش", render: function(data) {
+                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen></iframe>`;
             }},
         ],
         order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
@@ -202,6 +221,15 @@ function displayVideos(videos) {
     videoTableContainer.style.display = "block";
 }
 
+const toggleDarkMode = () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+};
+
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+}
+
 document.getElementById("fetchVideosButton").addEventListener("click", async () => {
     const channelInput = document.getElementById("channelInput").value;
 
@@ -218,17 +246,7 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
     errorAlert.style.display = "none";
 
     try {
-        let videos = loadFromLocalStorage(channelId);
-        if (!videos) {
-            videos = await fetchVideosWithRetry(channelId);
-            saveToLocalStorage(channelId, { channelName, channelDescription, videos });
-        } else {
-            channelName = videos.channelName;
-            channelDescription = videos.channelDescription;
-            videos = videos.videos;
-        }
-
-        displayChannelInfo();
+        const videos = await fetchVideosWithRetry(channelId);
         displayVideos(videos);
     } catch (error) {
         console.error(error);
@@ -240,3 +258,4 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
 });
 
 loadApiKeys();
+displaySearchHistory();

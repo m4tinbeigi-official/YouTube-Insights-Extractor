@@ -6,6 +6,20 @@ body {
     text-align: right;
 }
 
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+body.dark-mode .footer {
+    background-color: #1a1a1a;
+}
+
+body.dark-mode .video-item {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -73,4 +87,13 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
+}
+
+#history ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+#history ul li {
+    margin-bottom: 10px;
 }
