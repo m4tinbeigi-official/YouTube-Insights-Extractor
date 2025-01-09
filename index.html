@@ -6,6 +6,8 @@
     <title>تحلیل‌گر یوتیوب</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/font-face.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -25,8 +27,29 @@
                 <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
             </div>
         </div>
+        <div id="channelInfo" class="my-4" style="display: none;">
+            <h3 id="channelName"></h3>
+            <p id="channelDescription"></p>
+        </div>
         <div id="errorAlert" class="alert alert-danger mt-4" style="display: none;"></div>
-        <div id="videoList" class="mt-4"></div>
+        <div id="videoTableContainer" class="mt-4" style="display: none;">
+            <table id="videoTable" class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>عنوان ویدیو</th>
+                        <th>تعداد بازدید</th>
+                        <th>تعداد لایک‌ها</th>
+                        <th>تعداد کامنت‌ها</th>
+                        <th>تاریخ انتشار</th>
+                        <th>تصویر</th>
+                        <th>لینک ویدیو</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- داده‌ها اینجا وارد می‌شوند -->
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- فوتر -->
@@ -58,6 +81,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="scripts.js"></script>
 </body>
 </html>

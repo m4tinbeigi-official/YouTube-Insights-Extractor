@@ -11,17 +11,8 @@ body {
     margin: 0 auto;
 }
 
-.video-item {
-    margin-bottom: 15px;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: right;
-}
-
 .video-thumbnail {
-    width: 100%;
+    width: 100px;
     height: auto;
     border-radius: 8px;
 }
@@ -70,4 +61,16 @@ body {
     background-color: #ffcccc;
     border-color: #ff6666;
     color: #cc0000;
+}
+
+.dataTables_wrapper .dt-buttons {
+    margin-bottom: 10px;
+}
+
+#channelInfo {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }

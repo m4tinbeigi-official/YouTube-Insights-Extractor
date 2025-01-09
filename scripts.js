@@ -1,5 +1,7 @@
 let apiKeys = [];
 let currentKeyIndex = 0;
+let channelName = "";
+let channelDescription = "";
 
 async function loadApiKeys() {
     try {
@@ -53,11 +55,14 @@ async function fetchVideos(apiKey, channelId) {
     try {
         const channelResponse = await axios.get(`${youtubeAPI}/channels`, {
             params: {
-                part: "contentDetails",
+                part: "snippet",
                 id: channelId,
                 key: apiKey,
             },
         });
+        channelName = channelResponse.data.items[0].snippet.title;
+        channelDescription = channelResponse.data.items[0].snippet.description;
+
         const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
 
         let nextPageToken = "";
@@ -96,6 +101,7 @@ async function fetchVideos(apiKey, channelId) {
                 });
 
                 const stats = videoResponse.data.items[0].statistics;
+                const viewCount = stats.viewCount || 0;
                 const likeCount = stats.likeCount || 0;
                 const commentCount = stats.commentCount || 0;
 
@@ -105,6 +111,7 @@ async function fetchVideos(apiKey, channelId) {
                     thumbnail: thumbnailUrl, 
                     description, 
                     publishDate, 
+                    viewCount, 
                     likeCount, 
                     commentCount 
                 });
@@ -134,18 +141,65 @@ function extractChannelId(input) {
     }
 }
 
+function displayChannelInfo() {
+    const channelInfo = document.getElementById("channelInfo");
+    const channelNameElement = document.getElementById("channelName");
+    const channelDescriptionElement = document.getElementById("channelDescription");
+
+    channelNameElement.textContent = channelName;
+    channelDescriptionElement.textContent = channelDescription;
+    channelInfo.style.display = "block";
+}
+
+function saveToLocalStorage(channelId, data) {
+    localStorage.setItem(channelId, JSON.stringify(data));
+}
+
+function loadFromLocalStorage(channelId) {
+    const data = localStorage.getItem(channelId);
+    return data ? JSON.parse(data) : null;
+}
+
 function displayVideos(videos) {
-    const videoList = document.getElementById("videoList");
-    videoList.innerHTML = videos.map(video => `
-        <div class="video-item">
-            <img src="${video.thumbnail}" class="video-thumbnail" alt="${video.title}">
-            <h3>${video.title}</h3>
-            <p>${video.description}</p>
-            <p>تاریخ انتشار: ${new Date(video.publishDate).toLocaleDateString('fa-IR')}</p>
-            <p>تعداد لایک‌ها: ${video.likeCount}</p>
-            <p>تعداد کامنت‌ها: ${video.commentCount}</p>
-        </div>
-    `).join("");
+    const videoTableContainer = document.getElementById("videoTableContainer");
+    const videoTable = $("#videoTable").DataTable({
+        data: videos,
+        columns: [
+            { data: "title", title: "عنوان ویدیو" },
+            { data: "viewCount", title: "تعداد بازدید" },
+            { data: "likeCount", title: "تعداد لایک‌ها" },
+            { data: "commentCount", title: "تعداد کامنت‌ها" },
+            { data: "publishDate", title: "تاریخ انتشار", render: function(data) {
+                return new Date(data).toLocaleDateString('fa-IR');
+            }},
+            { data: "thumbnail", title: "تصویر", render: function(data) {
+                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو">`;
+            }},
+            { data: "id", title: "لینک ویدیو", render: function(data) {
+                return `<a href="https://www.youtube.com/watch?v=${data}" target="_blank">پخش ویدیو</a>`;
+            }},
+        ],
+        order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'csv',
+                text: 'دانلود CSV',
+                filename: function() {
+                    return `${channelName}_videos`;
+                },
+                title: `ویدیوهای کانال ${channelName}`,
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
+                }
+            }
+        ],
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json" // فارسی‌سازی DataTables
+        }
+    });
+
+    videoTableContainer.style.display = "block";
 }
 
 document.getElementById("fetchVideosButton").addEventListener("click", async () => {
@@ -164,7 +218,17 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
     errorAlert.style.display = "none";
 
     try {
-        const videos = await fetchVideosWithRetry(channelId);
+        let videos = loadFromLocalStorage(channelId);
+        if (!videos) {
+            videos = await fetchVideosWithRetry(channelId);
+            saveToLocalStorage(channelId, { channelName, channelDescription, videos });
+        } else {
+            channelName = videos.channelName;
+            channelDescription = videos.channelDescription;
+            videos = videos.videos;
+        }
+
+        displayChannelInfo();
         displayVideos(videos);
     } catch (error) {
         console.error(error);
