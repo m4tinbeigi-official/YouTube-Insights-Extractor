@@ -24,10 +24,11 @@ function switchToNextApiKey() {
 
 async function fetchVideosWithRetry(channelId) {
     let retries = apiKeys.length;
+    let videos = [];
     while (retries > 0) {
         const apiKey = getCurrentApiKey();
         try {
-            const videos = await fetchVideos(apiKey, channelId);
+            videos = await fetchVideos(apiKey, channelId);
             return videos;
         } catch (error) {
             console.warn(`خطا با کلید API ${apiKey}:`, error);
@@ -106,7 +107,6 @@ async function fetchVideos(apiKey, channelId) {
     }
 }
 
-// تابع extractChannelId برای استخراج شناسه کانال از لینک یا شناسه وارد شده
 function extractChannelId(input) {
     if (input.includes("youtube.com/channel/")) {
         return input.split("youtube.com/channel/")[1].split("/")[0];
@@ -119,7 +119,20 @@ function extractChannelId(input) {
     }
 }
 
-// رویداد کلیک برای دکمه استخراج ویدیوها
+function displayVideos(videos) {
+    const videoList = document.getElementById("videoList");
+    videoList.innerHTML = videos.map(video => `
+        <div class="video-item">
+            <img src="${video.thumbnail}" class="video-thumbnail" alt="${video.title}">
+            <h3>${video.title}</h3>
+            <p>${video.description}</p>
+            <p>تاریخ انتشار: ${new Date(video.publishDate).toLocaleDateString('fa-IR')}</p>
+            <p>تعداد لایک‌ها: ${video.likeCount}</p>
+            <p>تعداد کامنت‌ها: ${video.commentCount}</p>
+        </div>
+    `).join("");
+}
+
 document.getElementById("fetchVideosButton").addEventListener("click", async () => {
     const channelInput = document.getElementById("channelInput").value;
 
@@ -128,15 +141,23 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         return;
     }
 
-    const channelId = extractChannelId(channelInput); // فراخوانی تابع extractChannelId
+    const channelId = extractChannelId(channelInput);
+    const loading = document.getElementById("loading");
+    const errorAlert = document.getElementById("errorAlert");
+
+    loading.style.display = "block";
+    errorAlert.style.display = "none";
+
     try {
         const videos = await fetchVideosWithRetry(channelId);
         displayVideos(videos);
     } catch (error) {
         console.error(error);
-        alert("خطایی رخ داده است. لطفاً بعداً دوباره تلاش کنید.");
+        errorAlert.textContent = `خطا: ${error.message}`;
+        errorAlert.style.display = "block";
+    } finally {
+        loading.style.display = "none";
     }
 });
 
-// بارگذاری کلیدهای API
 loadApiKeys();
