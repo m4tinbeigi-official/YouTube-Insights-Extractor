@@ -18,6 +18,7 @@
             <input type="text" id="channelInput" class="form-control" placeholder="شناسه یا لینک کانال را وارد کنید">
         </div>
         <button id="fetchVideosButton" class="btn btn-primary w-100">استخراج ویدیوها</button>
+        <button onclick="toggleDarkMode()" class="btn btn-secondary w-100 mt-2">تغییر تم</button>
         <div id="loading" class="text-center my-4" style="display: none;">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -30,6 +31,9 @@
         <div id="channelInfo" class="my-4" style="display: none;">
             <h3 id="channelName"></h3>
             <p id="channelDescription"></p>
+            <p id="channelSubscribers"></p>
+            <p id="channelViews"></p>
+            <p id="channelCreationDate"></p>
         </div>
         <div id="errorAlert" class="alert alert-danger mt-4" style="display: none;"></div>
         <div id="videoTableContainer" class="mt-4" style="display: none;">
@@ -42,13 +46,20 @@
                         <th>تعداد کامنت‌ها</th>
                         <th>تاریخ انتشار</th>
                         <th>تصویر</th>
-                        <th>لینک ویدیو</th>
+                        <th>پیش‌نمایش</th>
                     </tr>
                 </thead>
                 <tbody>
                     <!-- داده‌ها اینجا وارد می‌شوند -->
                 </tbody>
             </table>
+        </div>
+        <div id="history" class="mt-4">
+            <h3>تاریخچه جستجو</h3>
+            <ul id="historyList"></ul>
+        </div>
+        <div class="alert alert-info mt-4">
+            <p>این پروژه در حال توسعه است. برای مشاهده کدها و مشارکت، به <a href="https://B2n.ir/YouTube-Insights-Extract" target="_blank">این لینک</a> مراجعه کنید.</p>
         </div>
     </div>
 
