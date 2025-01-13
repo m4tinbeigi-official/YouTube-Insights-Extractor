@@ -177,6 +177,28 @@ function extractChannelId(input) {
     }
 }
 
+async function getChannelIdByUsername(username) {
+    const apiKey = getCurrentApiKey();
+    const youtubeAPI = "https://www.googleapis.com/youtube/v3";
+    try {
+        const response = await axios.get(`${youtubeAPI}/channels`, {
+            params: {
+                part: "id",
+                forUsername: username,
+                key: apiKey,
+            },
+        });
+        if (response.data.items.length > 0) {
+            return response.data.items[0].id; // شناسه کانال
+        } else {
+            throw new Error("کانال با این نام کاربری یافت نشد.");
+        }
+    } catch (error) {
+        console.error("خطا در دریافت شناسه کانال:", error);
+        throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
+    }
+}
+
 function displayChannelInfo(name, description, subscribers, views, creationDate) {
     const channelInfo = document.getElementById("channelInfo");
     channelInfo.innerHTML = `
@@ -301,27 +323,6 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         loading.style.display = "none";
     }
 });
-async function getChannelIdByUsername(username) {
-    const apiKey = getCurrentApiKey();
-    const youtubeAPI = "https://www.googleapis.com/youtube/v3";
-    try {
-        const response = await axios.get(`${youtubeAPI}/channels`, {
-            params: {
-                part: "id",
-                forUsername: username,
-                key: apiKey,
-            },
-        });
-        if (response.data.items.length > 0) {
-            return response.data.items[0].id; // شناسه کانال
-        } else {
-            throw new Error("کانال با این نام کاربری یافت نشد.");
-        }
-    } catch (error) {
-        console.error("خطا در دریافت شناسه کانال:", error);
-        throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
-    }
-}
 
 loadApiKeys();
 displaySearchHistory();
