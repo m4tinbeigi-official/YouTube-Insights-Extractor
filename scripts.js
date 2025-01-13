@@ -301,8 +301,6 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         loading.style.display = "none";
     }
 });
-
-
 async function getChannelIdByUsername(username) {
     const apiKey = getCurrentApiKey();
     const youtubeAPI = "https://www.googleapis.com/youtube/v3";
