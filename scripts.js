@@ -142,14 +142,33 @@ async function fetchVideos(apiKey, channelId) {
 }
 
 function extractChannelId(input) {
+    // اگر ورودی یک لینک کامل باشد
     if (input.includes("youtube.com/channel/")) {
         return input.split("youtube.com/channel/")[1].split("/")[0];
-    } else if (input.includes("youtube.com/c/")) {
+    }
+    // اگر ورودی یک لینک با نام کاربری باشد (مثال: youtube.com/c/tseries)
+    else if (input.includes("youtube.com/c/")) {
         return input.split("youtube.com/c/")[1].split("/")[0];
-    } else if (input.includes("youtube.com/user/")) {
+    }
+    // اگر ورودی یک لینک با نام کاربری قدیمی باشد (مثال: youtube.com/user/tseries)
+    else if (input.includes("youtube.com/user/")) {
         return input.split("youtube.com/user/")[1].split("/")[0];
-    } else {
-        return input.trim();
+    }
+    // اگر ورودی یک لینک کوتاه باشد (مثال: youtube.com/@tseries)
+    else if (input.includes("youtube.com/@")) {
+        return input.split("youtube.com/@")[1].split("/")[0];
+    }
+    // اگر ورودی یک شناسه کانال باشد (مثال: UCq-Fj5jknLsUf-MWSy4_brA)
+    else if (input.startsWith("UC") && input.length === 24) {
+        return input;
+    }
+    // اگر ورودی یک نام کاربری باشد (مثال: @tseries)
+    else if (input.startsWith("@")) {
+        return input.slice(1); // حذف @ از ابتدای نام کاربری
+    }
+    // اگر ورودی نامعتبر باشد
+    else {
+        throw new Error("فرمت شناسه یا لینک کانال نامعتبر است.");
     }
 }
 
@@ -247,7 +266,6 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         return;
     }
 
-    const channelId = extractChannelId(channelInput);
     const loading = document.getElementById("loading");
     const errorAlert = document.getElementById("errorAlert");
 
@@ -255,6 +273,19 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
     errorAlert.style.display = "none";
 
     try {
+        // استخراج شناسه کانال از ورودی
+        const channelId = extractChannelId(channelInput);
+
+        // اگر شناسه کانال با UC شروع نشد، فرض می‌کنیم نام کاربری است و شناسه کانال را دریافت می‌کنیم
+        if (!channelId.startsWith("UC")) {
+            const channelIdFromUsername = await getChannelIdByUsername(channelId);
+            if (!channelIdFromUsername) {
+                throw new Error("کانال با این نام کاربری یافت نشد.");
+            }
+            channelId = channelIdFromUsername;
+        }
+
+        // دریافت ویدیوهای کانال
         const videos = await fetchVideosWithRetry(channelId);
         displayVideos(videos);
     } catch (error) {
@@ -265,6 +296,29 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         loading.style.display = "none";
     }
 });
+
+
+async function getChannelIdByUsername(username) {
+    const apiKey = getCurrentApiKey();
+    const youtubeAPI = "https://www.googleapis.com/youtube/v3";
+    try {
+        const response = await axios.get(`${youtubeAPI}/channels`, {
+            params: {
+                part: "id",
+                forUsername: username,
+                key: apiKey,
+            },
+        });
+        if (response.data.items.length > 0) {
+            return response.data.items[0].id; // شناسه کانال
+        } else {
+            throw new Error("کانال با این نام کاربری یافت نشد.");
+        }
+    } catch (error) {
+        console.error("خطا در دریافت شناسه کانال:", error);
+        throw error;
+    }
+}
 
 loadApiKeys();
 displaySearchHistory();
