@@ -56,9 +56,10 @@ async function fetchVideosWithRetry(channelId) {
 async function fetchVideos(apiKey, channelId) {
     const youtubeAPI = "https://www.googleapis.com/youtube/v3";
     try {
+        // دریافت اطلاعات کانال و شناسه پلی‌لیست آپلودها
         const channelResponse = await axios.get(`${youtubeAPI}/channels`, {
             params: {
-                part: "snippet,statistics",
+                part: "snippet,statistics,contentDetails",
                 id: channelId,
                 key: apiKey,
             },
@@ -74,6 +75,7 @@ async function fetchVideos(apiKey, channelId) {
 
         const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
 
+        // دریافت ویدیوها از پلی‌لیست آپلودها
         let nextPageToken = "";
         const videos = [];
         let totalVideos = 0;
@@ -101,6 +103,7 @@ async function fetchVideos(apiKey, channelId) {
                 const description = item.snippet.description;
                 const publishDate = item.snippet.publishedAt;
 
+                // دریافت آمار ویدیو
                 const videoResponse = await axios.get(`${youtubeAPI}/videos`, {
                     params: {
                         part: "statistics",
