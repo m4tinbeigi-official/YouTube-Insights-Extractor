@@ -145,24 +145,23 @@ async function fetchVideos(apiKey, channelId) {
 }
 
 function extractChannelId(input) {
-	
-	if (!input) {
+    if (!input) {
         throw new Error("لطفاً شناسه یا لینک کانال را وارد کنید!");
     }
-	
+
     // اگر ورودی یک لینک کامل باشد
     if (input.includes("youtube.com/channel/")) {
         return input.split("youtube.com/channel/")[1].split("/")[0];
     }
-    // اگر ورودی یک لینک با نام کاربری باشد (مثال: youtube.com/c/tseries)
+    // اگر ورودی یک لینک با نام کاربری باشد (مثال: youtube.com/c/adeltalebi)
     else if (input.includes("youtube.com/c/")) {
         return input.split("youtube.com/c/")[1].split("/")[0];
     }
-    // اگر ورودی یک لینک با نام کاربری قدیمی باشد (مثال: youtube.com/user/tseries)
+    // اگر ورودی یک لینک با نام کاربری قدیمی باشد (مثال: youtube.com/user/adeltalebi)
     else if (input.includes("youtube.com/user/")) {
         return input.split("youtube.com/user/")[1].split("/")[0];
     }
-    // اگر ورودی یک لینک کوتاه باشد (مثال: youtube.com/@tseries)
+    // اگر ورودی یک لینک کوتاه باشد (مثال: youtube.com/@adeltalebi)
     else if (input.includes("youtube.com/@")) {
         return input.split("youtube.com/@")[1].split("/")[0];
     }
@@ -170,13 +169,11 @@ function extractChannelId(input) {
     else if (input.startsWith("UC") && input.length === 24) {
         return input;
     }
-    // اگر ورودی یک نام کاربری باشد (مثال: @tseries)
+    // اگر ورودی یک نام کاربری باشد (مثال: adeltalebi یا @adeltalebi)
     else if (input.startsWith("@")) {
         return input.slice(1); // حذف @ از ابتدای نام کاربری
-    }
-    // اگر ورودی نامعتبر باشد
-    else {
-        throw new Error("فرمت شناسه یا لینک کانال نامعتبر است.");
+    } else {
+        return input; // فرض می‌کنیم ورودی یک نام کاربری است
     }
 }
 
@@ -284,13 +281,14 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
         // استخراج شناسه کانال از ورودی
         let channelId = extractChannelId(channelInput);
 
-		if (!channelId.startsWith("UC")) {
-			const channelIdFromUsername = await getChannelIdByUsername(channelId);
-			if (!channelIdFromUsername) {
-				throw new Error("کانال با این نام کاربری یافت نشد.");
-			}
-			channelId = channelIdFromUsername; // اکنون مشکلی ندارد
-		}
+        // اگر شناسه کانال با UC شروع نشد، فرض می‌کنیم نام کاربری است و شناسه کانال را دریافت می‌کنیم
+        if (!channelId.startsWith("UC")) {
+            const channelIdFromUsername = await getChannelIdByUsername(channelId);
+            if (!channelIdFromUsername) {
+                throw new Error("کانال با این نام کاربری یافت نشد.");
+            }
+            channelId = channelIdFromUsername;
+        }
 
         // دریافت ویدیوهای کانال
         const videos = await fetchVideosWithRetry(channelId);
