@@ -50,7 +50,7 @@ async function fetchVideosWithRetry(channelId) {
             retries--;
         }
     }
-    throw new Error('تمام کلیدهای API شکست خوردند.');
+    throw new Error("تمام کلیدهای API شکست خوردند. لطفاً بعداً دوباره امتحان کنید.");
 }
 
 async function fetchVideos(apiKey, channelId) {
@@ -93,26 +93,29 @@ async function fetchVideos(apiKey, channelId) {
             });
 
             totalVideos = playlistResponse.data.pageInfo.totalResults;
-            for (const item of playlistResponse.data.items) {
+            const videoIds = playlistResponse.data.items.map(item => item.snippet.resourceId.videoId);
+
+            // دریافت آمار ویدیوها به صورت گروهی
+            const videoResponse = await axios.get(`${youtubeAPI}/videos`, {
+                params: {
+                    part: "statistics",
+                    id: videoIds.join(","),
+                    key: apiKey,
+                },
+            });
+
+            for (let i = 0; i < playlistResponse.data.items.length; i++) {
                 currentVideo++;
                 updateProgress(currentVideo, totalVideos);
 
+                const item = playlistResponse.data.items[i];
                 const videoId = item.snippet.resourceId.videoId;
                 const videoTitle = item.snippet.title;
                 const thumbnailUrl = item.snippet.thumbnails.medium.url;
                 const description = item.snippet.description;
                 const publishDate = item.snippet.publishedAt;
 
-                // دریافت آمار ویدیو
-                const videoResponse = await axios.get(`${youtubeAPI}/videos`, {
-                    params: {
-                        part: "statistics",
-                        id: videoId,
-                        key: apiKey,
-                    },
-                });
-
-                const stats = videoResponse.data.items[0].statistics;
+                const stats = videoResponse.data.items[i].statistics;
                 const viewCount = stats.viewCount || 0;
                 const likeCount = stats.likeCount || 0;
                 const commentCount = stats.commentCount || 0;
@@ -142,6 +145,11 @@ async function fetchVideos(apiKey, channelId) {
 }
 
 function extractChannelId(input) {
+	
+	if (!input) {
+        throw new Error("لطفاً شناسه یا لینک کانال را وارد کنید!");
+    }
+	
     // اگر ورودی یک لینک کامل باشد
     if (input.includes("youtube.com/channel/")) {
         return input.split("youtube.com/channel/")[1].split("/")[0];
@@ -274,16 +282,15 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
 
     try {
         // استخراج شناسه کانال از ورودی
-        const channelId = extractChannelId(channelInput);
+        let channelId = extractChannelId(channelInput);
 
-        // اگر شناسه کانال با UC شروع نشد، فرض می‌کنیم نام کاربری است و شناسه کانال را دریافت می‌کنیم
-        if (!channelId.startsWith("UC")) {
-            const channelIdFromUsername = await getChannelIdByUsername(channelId);
-            if (!channelIdFromUsername) {
-                throw new Error("کانال با این نام کاربری یافت نشد.");
-            }
-            channelId = channelIdFromUsername;
-        }
+		if (!channelId.startsWith("UC")) {
+			const channelIdFromUsername = await getChannelIdByUsername(channelId);
+			if (!channelIdFromUsername) {
+				throw new Error("کانال با این نام کاربری یافت نشد.");
+			}
+			channelId = channelIdFromUsername; // اکنون مشکلی ندارد
+		}
 
         // دریافت ویدیوهای کانال
         const videos = await fetchVideosWithRetry(channelId);
@@ -316,7 +323,7 @@ async function getChannelIdByUsername(username) {
         }
     } catch (error) {
         console.error("خطا در دریافت شناسه کانال:", error);
-        throw error;
+        throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
     }
 }
 
