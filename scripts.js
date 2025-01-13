@@ -13,6 +13,7 @@ async function loadApiKeys() {
     } catch (error) {
         console.error('خطا در بارگذاری کلیدهای API:', error);
         alert('خطایی در بارگذاری کلیدهای API رخ داد. لطفاً بررسی کنید.');
+        throw error; // جلوگیری از ادامه اجرای کد
     }
 }
 
@@ -25,12 +26,14 @@ function switchToNextApiKey() {
 }
 
 function updateProgress(current, total) {
-    const progressBar = document.getElementById("progressBar");
-    const progressText = document.getElementById("progressText");
-    const percent = Math.round((current / total) * 100);
-    progressBar.style.width = `${percent}%`;
-    progressBar.textContent = `${percent}%`;
-    progressText.textContent = `در حال پردازش ویدیو ${current} از ${total}`;
+    setTimeout(() => {
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+        const percent = Math.round((current / total) * 100);
+        progressBar.style.width = `${percent}%`;
+        progressBar.textContent = `${percent}%`;
+        progressText.textContent = `در حال پردازش ویدیو ${current} از ${total}`;
+    }, 0);
 }
 
 async function fetchVideosWithRetry(channelId) {
@@ -163,6 +166,9 @@ function saveSearchHistory(channelId, channelName) {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     if (!history.some(item => item.id === channelId)) {
         history.push({ id: channelId, name: channelName });
+        if (history.length > 10) { // محدود کردن تاریخچه به 10 آیتم
+            history.shift();
+        }
         localStorage.setItem('searchHistory', JSON.stringify(history));
     }
     displaySearchHistory();
@@ -192,10 +198,10 @@ function displayVideos(videos) {
                 return new Date(data).toLocaleDateString('fa-IR');
             }},
             { data: "thumbnail", title: "تصویر", render: function(data) {
-                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو">`;
+                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو" onerror="this.src='default-thumbnail.jpg'">`;
             }},
             { data: "id", title: "پیش‌نمایش", render: function(data) {
-                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen></iframe>`;
+                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
             }},
         ],
         order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
