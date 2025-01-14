@@ -184,7 +184,7 @@ async function getChannelIdByUsername(username) {
         const response = await axios.get(`${youtubeAPI}/channels`, {
             params: {
                 part: "id",
-                forUsername: username,
+                forHandle: username,
                 key: apiKey,
             },
         });
