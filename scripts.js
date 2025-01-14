@@ -188,11 +188,13 @@ async function getChannelIdByUsername(username) {
                 key: apiKey,
             },
         });
-        if (response.data.items.length > 0) {
-            return response.data.items[0].id; // شناسه کانال
-        } else {
+
+        // بررسی وجود items در پاسخ API
+        if (!response.data || !response.data.items || response.data.items.length === 0) {
             throw new Error("کانال با این نام کاربری یافت نشد.");
         }
+
+        return response.data.items[0].id; // شناسه کانال
     } catch (error) {
         console.error("خطا در دریافت شناسه کانال:", error);
         throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
