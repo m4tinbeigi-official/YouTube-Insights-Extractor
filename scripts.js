@@ -206,9 +206,9 @@ function displayChannelInfo(name, description, subscribers, views, creationDate)
     channelInfo.innerHTML = `
         <h3>${name}</h3>
         <p>${description}</p>
-        <p>تعداد سابسکرایبرها: ${subscribers}</p>
-        <p>تعداد کل بازدیدها: ${views}</p>
-        <p>تاریخ ایجاد کانال: ${new Date(creationDate).toLocaleDateString('fa-IR')}</p>
+        <p>تعداد سابسکرایبرها: ${toPersianNumbers(subscribers)}</p>
+        <p>تعداد کل بازدیدها: ${toPersianNumbers(views)}</p>
+        <p>تاریخ ایجاد کانال: ${toPersianDate(creationDate)}</p>
     `;
     channelInfo.style.display = "block";
 }
@@ -236,17 +236,33 @@ function fetchChannel(channelId) {
     document.getElementById('fetchVideosButton').click();
 }
 
+function toPersianNumbers(input) {
+    const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    return String(input).replace(/\d/g, (match) => persianNumbers[match]);
+}
+
+function toPersianDate(date) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(date).toLocaleDateString('fa-IR', options);
+}
+
 function displayVideos(videos) {
     const videoTableContainer = document.getElementById("videoTableContainer");
     const videoTable = $("#videoTable").DataTable({
         data: videos,
         columns: [
             { data: "title", title: "عنوان ویدیو" },
-            { data: "viewCount", title: "تعداد بازدید" },
-            { data: "likeCount", title: "تعداد لایک‌ها" },
-            { data: "commentCount", title: "تعداد کامنت‌ها" },
+            { data: "viewCount", title: "تعداد بازدید", render: function(data) {
+                return toPersianNumbers(data);
+            }},
+            { data: "likeCount", title: "تعداد لایک‌ها", render: function(data) {
+                return toPersianNumbers(data);
+            }},
+            { data: "commentCount", title: "تعداد کامنت‌ها", render: function(data) {
+                return toPersianNumbers(data);
+            }},
             { data: "publishDate", title: "تاریخ انتشار", render: function(data) {
-                return new Date(data).toLocaleDateString('fa-IR');
+                return toPersianDate(data);
             }},
             { data: "thumbnail", title: "تصویر", render: function(data) {
                 return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو" onerror="this.src='default-thumbnail.jpg'">`;
@@ -267,7 +283,8 @@ function displayVideos(videos) {
                 title: `ویدیوهای کانال ${channelName}`,
                 exportOptions: {
                     columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
-                }
+                },
+                bom: true // افزودن BOM به فایل CSV
             }
         ],
         language: {
@@ -276,6 +293,20 @@ function displayVideos(videos) {
     });
 
     videoTableContainer.style.display = "block";
+}
+
+function exportToCSV(data) {
+    const csv = Papa.unparse(data, {
+        quotes: true, // استفاده از کوتیشن برای مقادیر
+        delimiter: ",", // جداکننده فیلدها
+        encoding: "UTF-8" // تنظیم encoding
+    });
+
+    const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${channelName}_videos.csv`;
+    link.click();
 }
 
 const toggleDarkMode = () => {
