@@ -12,8 +12,8 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row">
-            <div class="col-12 col-md-8 offset-md-2">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
                 <h1 class="text-center my-4">تحلیل‌گر ویدیوهای یوتیوب - اطلاعات کامل کانال‌ها و ویدیوها</h1>
                 <div class="mb-3">
                     <label for="channelInput" class="form-label">شناسه یا لینک کانال یوتیوب:</label>
@@ -21,7 +21,7 @@
                 </div>
                 <button id="fetchVideosButton" class="btn btn-primary w-100">دریافت ویدیوها</button>
                 <button onclick="toggleDarkMode()" class="btn btn-secondary w-100 mt-2">تغییر به تم دارک</button>
-                <div id="loading" class="text-center my-4" style="display: none;">
+                <div id="loading" class="text-center my-4 d-none">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">در حال بارگذاری...</span>
                     </div>
@@ -30,16 +30,16 @@
                         <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;">0%</div>
                     </div>
                 </div>
-                <div id="channelInfo" class="my-4" style="display: none;">
+                <div id="channelInfo" class="my-4 d-none">
                     <h3 id="channelName"></h3>
                     <p id="channelDescription"></p>
                     <p id="channelSubscribers"></p>
                     <p id="channelViews"></p>
                     <p id="channelCreationDate"></p>
                 </div>
-                <div id="errorAlert" class="alert alert-danger mt-4" style="display: none;"></div>
-                <div id="videoTableContainer" class="mt-4" style="display: none;">
-                    <table id="videoTable" class="table table-striped" style="width:100%">
+                <div id="errorAlert" class="alert alert-danger mt-4 d-none"></div>
+                <div id="videoTableContainer" class="mt-4 d-none">
+                    <table id="videoTable" class="table table-striped w-100">
                         <thead>
                             <tr>
                                 <th>عنوان ویدیو</th>
@@ -58,7 +58,7 @@
                 </div>
                 <div id="history" class="mt-4">
                     <h3>تاریخچه جستجو</h3>
-                    <ul id="historyList"></ul>
+                    <ul id="historyList" class="list-unstyled"></ul>
                 </div>
                 <div class="alert alert-info mt-4">
                     <p>این پروژه در حال توسعه است. برای مشاهده کدها و مشارکت، به <a href="https://B2n.ir/YouTube-Insights-Extract" target="_blank">این لینک</a> مراجعه کنید.</p>
@@ -68,26 +68,26 @@
     </div>
 
     <!-- فوتر -->
-    <footer class="footer mt-auto py-3 bg-dark">
+    <footer class="footer mt-auto py-3 bg-dark text-light">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-lg-6 mb-3">
                     <h5>درباره ما</h5>
                     <p>این پروژه به منظور تحلیل ویدیوهای یوتیوب و ارائه اطلاعات مفید درباره کانال‌ها و ویدیوها ایجاد شده است. با استفاده از این ابزار، می‌توانید به راحتی اطلاعات مربوط به ویدیوها و کانال‌های یوتیوب را استخراج و تحلیل کنید.</p>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 mb-3">
                     <h5>لینک‌های مفید</h5>
                     <ul class="list-unstyled">
-                        <li><a href="https://github.com/m4tinbeigi-official/YouTube-Insights-Extractor" target="_blank">مشاهده کدها در GitHub</a></li>
-                        <li><a href="https://www.youtube.com" target="_blank">برو به یوتیوب</a></li>
-                        <li><a href="#" target="_blank">راهنمای استفاده</a></li>
+                        <li><a href="https://github.com/m4tinbeigi-official/YouTube-Insights-Extractor" target="_blank" class="text-light">مشاهده کدها در GitHub</a></li>
+                        <li><a href="https://www.youtube.com" target="_blank" class="text-light">برو به یوتیوب</a></li>
+                        <li><a href="#" target="_blank" class="text-light">راهنمای استفاده</a></li>
                     </ul>
                 </div>
-                <div class="col-md-3">
+                <div class="col-lg-3 mb-3">
                     <h5>تماس با ما</h5>
                     <ul class="list-unstyled">
-                        <li><a href="mailto:example@example.com">ایمیل</a></li>
-                        <li><a href="https://twitter.com/example" target="_blank">توییتر</a></li>
+                        <li><a href="mailto:example@example.com" class="text-light">ایمیل</a></li>
+                        <li><a href="https://twitter.com/example" target="_blank" class="text-light">توییتر</a></li>
                     </ul>
                 </div>
             </div>

@@ -1,11 +1,14 @@
+/* General Styling */
 body {
     font-family: 'Vazir', sans-serif;
     padding: 20px;
     background-color: #f9f9f9;
     color: #333;
     text-align: right;
+    transition: background-color 0.3s, color 0.3s;
 }
 
+/* Dark Mode */
 body.dark-mode {
     background-color: #121212;
     color: #e0e0e0;
@@ -49,17 +52,26 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     background-color: #2a2a2a;
 }
 
+/* Layout */
 .container {
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 15px;
 }
 
+/* Video Thumbnails */
 .video-thumbnail {
     width: 100px;
     height: auto;
     border-radius: 8px;
+    transition: transform 0.3s;
 }
 
+.video-thumbnail:hover {
+    transform: scale(1.1);
+}
+
+/* Footer */
 .footer {
     background-color: #ff0000;
     color: #fff;
@@ -70,6 +82,7 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
 
 .footer h5 {
     color: #fff;
+    font-size: 1.5rem;
 }
 
 .footer a {
@@ -90,6 +103,7 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     margin-bottom: 10px;
 }
 
+/* Buttons */
 .btn-primary {
     background-color: #ff0000;
     border-color: #ff0000;
@@ -102,16 +116,19 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     transform: scale(1.05);
 }
 
+/* Alerts */
 .alert-danger {
     background-color: #ffcccc;
     border-color: #ff6666;
     color: #cc0000;
 }
 
+/* Data Tables */
 .dataTables_wrapper .dt-buttons {
     margin-bottom: 10px;
 }
 
+/* Channel Info Box */
 #channelInfo {
     background-color: #fff;
     padding: 20px;
@@ -120,6 +137,7 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     margin-bottom: 20px;
 }
 
+/* History List */
 #history ul {
     list-style-type: none;
     padding: 0;
@@ -129,6 +147,7 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     margin-bottom: 10px;
 }
 
+/* Responsive Design */
 @media (max-width: 768px) {
     .video-thumbnail {
         width: 80px;
