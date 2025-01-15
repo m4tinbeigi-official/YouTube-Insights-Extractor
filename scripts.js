@@ -231,6 +231,12 @@ function fetchChannel(channelId) {
 
 function displayVideos(videos) {
     const videoTableContainer = document.getElementById("videoTableContainer");
+    
+    // ابتدا DataTable قبلی را حذف می‌کنیم
+    if ($.fn.dataTable.isDataTable('#videoTable')) {
+        $('#videoTable').DataTable().clear().destroy();
+    }
+
     const videoTable = $("#videoTable").DataTable({
         data: videos,
         columns: [
