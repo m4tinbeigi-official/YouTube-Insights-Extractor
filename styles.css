@@ -1,79 +1,38 @@
-/* General Styling */
 body {
     font-family: 'Vazir', sans-serif;
     padding: 20px;
     background-color: #f9f9f9;
     color: #333;
     text-align: right;
-    transition: background-color 0.3s, color 0.3s;
 }
 
-/* Dark Mode */
 body.dark-mode {
     background-color: #121212;
-    color: #e0e0e0;
+    color: #ffffff;
 }
 
 body.dark-mode .footer {
     background-color: #1a1a1a;
-    color: #e0e0e0;
 }
 
 body.dark-mode .video-item {
     background-color: #1e1e1e;
-    color: #e0e0e0;
+    color: #ffffff;
 }
 
-body.dark-mode .alert-info {
-    background-color: #1a1a1a;
-    border-color: #333;
-    color: #e0e0e0;
-}
-
-body.dark-mode .btn-primary {
-    background-color: #ff4444;
-    border-color: #ff4444;
-}
-
-body.dark-mode .btn-primary:hover {
-    background-color: #cc0000;
-    border-color: #cc0000;
-}
-
-body.dark-mode .table {
-    color: #e0e0e0;
-}
-
-body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #1e1e1e;
-}
-
-body.dark-mode .table-striped tbody tr:nth-of-type(even) {
-    background-color: #2a2a2a;
-}
-
-/* Layout */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 15px;
 }
 
-/* Video Thumbnails */
 .video-thumbnail {
     width: 100px;
     height: auto;
     border-radius: 8px;
-    transition: transform 0.3s;
 }
 
-.video-thumbnail:hover {
-    transform: scale(1.1);
-}
-
-/* Footer */
 .footer {
-    background-color: #ff0000;
+    background-color: #ff0000; /* رنگ قرمز یوتیوب */
     color: #fff;
     padding: 20px 0;
     margin-top: 40px;
@@ -82,7 +41,6 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
 
 .footer h5 {
     color: #fff;
-    font-size: 1.5rem;
 }
 
 .footer a {
@@ -103,32 +61,26 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     margin-bottom: 10px;
 }
 
-/* Buttons */
 .btn-primary {
-    background-color: #ff0000;
+    background-color: #ff0000; /* رنگ قرمز یوتیوب */
     border-color: #ff0000;
-    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .btn-primary:hover {
     background-color: #cc0000;
     border-color: #cc0000;
-    transform: scale(1.05);
 }
 
-/* Alerts */
 .alert-danger {
     background-color: #ffcccc;
     border-color: #ff6666;
     color: #cc0000;
 }
 
-/* Data Tables */
 .dataTables_wrapper .dt-buttons {
     margin-bottom: 10px;
 }
 
-/* Channel Info Box */
 #channelInfo {
     background-color: #fff;
     padding: 20px;
@@ -137,7 +89,6 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
     margin-bottom: 20px;
 }
 
-/* History List */
 #history ul {
     list-style-type: none;
     padding: 0;
@@ -145,41 +96,4 @@ body.dark-mode .table-striped tbody tr:nth-of-type(even) {
 
 #history ul li {
     margin-bottom: 10px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .video-thumbnail {
-        width: 80px;
-    }
-
-    .footer .col-md-6, .footer .col-md-3 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .footer h5 {
-        font-size: 1.2rem;
-    }
-
-    .footer p {
-        font-size: 0.9rem;
-    }
-
-    .footer ul {
-        padding-left: 0;
-    }
-
-    .footer ul li {
-        margin-bottom: 5px;
-    }
-
-    #videoTable th, #videoTable td {
-        font-size: 0.9rem;
-    }
-
-    #videoTable iframe {
-        width: 150px;
-        height: 80px;
-    }
 }
