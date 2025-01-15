@@ -20,17 +20,83 @@ body.dark-mode .video-item {
     color: #ffffff;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+/* تنظیمات اولیه برای ریسپانسیو بودن */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    .btn {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .footer {
+        padding: 15px 0;
+    }
+
+    .footer h5 {
+        font-size: 16px;
+    }
+
+    .footer ul li {
+        font-size: 14px;
+    }
+
+    /* نمایش بیشتر محتوای جدول در موبایل */
+    #videoTable td {
+        font-size: 12px;
+    }
+
+    .video-thumbnail {
+        width: 80px;
+    }
+
+    #channelInfo {
+        padding: 15px;
+    }
+
+    #history ul li {
+        font-size: 14px;
+    }
 }
 
-.video-thumbnail {
-    width: 100px;
-    height: auto;
-    border-radius: 8px;
+@media (max-width: 480px) {
+    .btn {
+        font-size: 12px;
+        padding: 8px;
+    }
+
+    .video-thumbnail {
+        width: 60px;
+    }
+
+    #channelInfo {
+        padding: 10px;
+    }
+
+    .footer {
+        padding: 10px 0;
+    }
+
+    .footer h5 {
+        font-size: 14px;
+    }
+
+    #history ul li {
+        font-size: 12px;
+    }
 }
 
+/* برای دستگاه‌های بزرگتر از 1200px */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1200px;
+    }
+}
+
+/* تنظیمات فوتر */
 .footer {
     background-color: #ff0000; /* رنگ قرمز یوتیوب */
     color: #fff;
@@ -61,6 +127,7 @@ body.dark-mode .video-item {
     margin-bottom: 10px;
 }
 
+/* تنظیمات دکمه‌ها */
 .btn-primary {
     background-color: #ff0000; /* رنگ قرمز یوتیوب */
     border-color: #ff0000;
@@ -71,16 +138,12 @@ body.dark-mode .video-item {
     border-color: #cc0000;
 }
 
-.alert-danger {
-    background-color: #ffcccc;
-    border-color: #ff6666;
-    color: #cc0000;
-}
-
+/* تغییرات مربوط به جداول */
 .dataTables_wrapper .dt-buttons {
     margin-bottom: 10px;
 }
 
+/* اطلاعات کانال */
 #channelInfo {
     background-color: #fff;
     padding: 20px;
@@ -96,4 +159,9 @@ body.dark-mode .video-item {
 
 #history ul li {
     margin-bottom: 10px;
+}
+
+#loading {
+    text-align: center;
+    display: none;
 }
