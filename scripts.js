@@ -231,6 +231,17 @@ function toPersianDate(date) {
 
 function displayVideos(videos) {
     const videoTableContainer = document.getElementById("videoTableContainer");
+    const videoTableElement = document.getElementById("videoTable");
+
+    // اگر جدول از قبل مقداردهی شده باشد، آن را پاک کنید
+    if ($.fn.DataTable.isDataTable(videoTableElement)) {
+        $('#videoTable').DataTable().destroy();
+    }
+
+    // پاک کردن محتوای جدول
+    $('#videoTable tbody').empty();
+
+    // مقداردهی مجدد جدول
     const videoTable = $("#videoTable").DataTable({
         data: videos,
         columns: [
@@ -254,7 +265,7 @@ function displayVideos(videos) {
                 return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
             }},
         ],
-        order: [[1, "desc"]],
+        order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
         dom: 'Bfrtip',
         buttons: [
             {
@@ -265,13 +276,13 @@ function displayVideos(videos) {
                 },
                 title: `ویدیوهای کانال ${channelName}`,
                 exportOptions: {
-                    columns: [0, 1, 2, 3, 4]
+                    columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
                 },
-                bom: true
+                bom: true // افزودن BOM به فایل CSV
             }
         ],
         language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json"
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json" // فارسی‌سازی DataTables
         }
     });
 
