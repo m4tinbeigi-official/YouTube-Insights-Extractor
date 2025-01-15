@@ -66,12 +66,6 @@ async function fetchVideos(apiKey, channelId) {
         });
         channelName = channelResponse.data.items[0].snippet.title;
         channelDescription = channelResponse.data.items[0].snippet.description;
-        const subscriberCount = channelResponse.data.items[0].statistics.subscriberCount;
-        const totalViews = channelResponse.data.items[0].statistics.viewCount;
-        const channelCreationDate = channelResponse.data.items[0].snippet.publishedAt;
-
-        displayChannelInfo(channelName, channelDescription, subscriberCount, totalViews, channelCreationDate);
-        saveSearchHistory(channelId, channelName);
 
         const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
 
@@ -189,12 +183,11 @@ async function getChannelIdByUsername(username) {
             },
         });
 
-        // بررسی وجود items در پاسخ API
         if (!response.data || !response.data.items || response.data.items.length === 0) {
             throw new Error("کانال با این نام کاربری یافت نشد.");
         }
 
-        return response.data.items[0].id; // شناسه کانال
+        return response.data.items[0].id;
     } catch (error) {
         console.error("خطا در دریافت شناسه کانال:", error);
         throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
@@ -217,7 +210,7 @@ function saveSearchHistory(channelId, channelName) {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     if (!history.some(item => item.id === channelId)) {
         history.push({ id: channelId, name: channelName });
-        if (history.length > 10) { // محدود کردن تاریخچه به 10 آیتم
+        if (history.length > 10) {
             history.shift();
         }
         localStorage.setItem('searchHistory', JSON.stringify(history));
@@ -255,27 +248,37 @@ function displayVideos(videos) {
                 return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
             }},
         ],
-        order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
+        order: [[1, "desc"]],
         dom: 'Bfrtip',
         buttons: [
             {
-    extend: 'csv',
-    text: 'دانلود CSV',
-    filename: function() {
-        return `${channelName}_videos`;
-    },
-    title: `ویدیوهای کانال ${channelName}`,
-    exportOptions: {
-        columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
-    },
-    customize: function(csv) {
-        // اضافه کردن charset=utf-8 برای فایل CSV
-        return "data:text/csv;charset=utf-8," + encodeURI(csv);
-    }
-}
+                extend: 'csv',
+                text: 'دانلود CSV',
+                filename: function() {
+                    return `${channelName}_videos`;
+                },
+                title: `ویدیوهای کانال ${channelName}`,
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                },
+                customize: function(csv) {
+                    return "data:text/csv;charset=utf-8," + encodeURI(csv);
+                }
+            },
+            {
+                extend: 'excel',
+                text: 'دانلود Excel',
+                filename: function() {
+                    return `${channelName}_videos`;
+                },
+                title: `ویدیوهای کانال ${channelName}`,
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                }
+            }
         ],
         language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json" // فارسی‌سازی DataTables
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json"
         }
     });
 
@@ -306,10 +309,8 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
     errorAlert.style.display = "none";
 
     try {
-        // استخراج شناسه کانال از ورودی
         let channelId = extractChannelId(channelInput);
 
-        // اگر شناسه کانال با UC شروع نشد، فرض می‌کنیم نام کاربری است و شناسه کانال را دریافت می‌کنیم
         if (!channelId.startsWith("UC")) {
             const channelIdFromUsername = await getChannelIdByUsername(channelId);
             if (!channelIdFromUsername) {
@@ -318,7 +319,6 @@ document.getElementById("fetchVideosButton").addEventListener("click", async () 
             channelId = channelIdFromUsername;
         }
 
-        // دریافت ویدیوهای کانال
         const videos = await fetchVideosWithRetry(channelId);
         displayVideos(videos);
     } catch (error) {
