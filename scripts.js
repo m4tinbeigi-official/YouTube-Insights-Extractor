@@ -259,16 +259,20 @@ function displayVideos(videos) {
         dom: 'Bfrtip',
         buttons: [
             {
-                extend: 'csv',
-                text: 'دانلود CSV',
-                filename: function() {
-                    return `${channelName}_videos`;
-                },
-                title: `ویدیوهای کانال ${channelName}`,
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
-                }
-            }
+    extend: 'csv',
+    text: 'دانلود CSV',
+    filename: function() {
+        return `${channelName}_videos`;
+    },
+    title: `ویدیوهای کانال ${channelName}`,
+    exportOptions: {
+        columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
+    },
+    customize: function(csv) {
+        // اضافه کردن charset=utf-8 برای فایل CSV
+        return "data:text/csv;charset=utf-8," + encodeURI(csv);
+    }
+}
         ],
         language: {
             url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json" // فارسی‌سازی DataTables
