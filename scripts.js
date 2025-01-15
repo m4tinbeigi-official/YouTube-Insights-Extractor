@@ -1,3 +1,4 @@
+// نمایش درصد پیشرفت هنگام جمع‌آوری اطلاعات کانال از وب سرویس یوتیوب
 let apiKeys = [];
 let currentKeyIndex = 0;
 let channelName = "";
@@ -61,6 +62,7 @@ async function fetchVideos(apiKey, channelId) {
                 key: apiKey,
             },
         });
+
         channelName = channelResponse.data.items[0].snippet.title;
         channelDescription = channelResponse.data.items[0].snippet.description;
         const subscriberCount = channelResponse.data.items[0].statistics.subscriberCount;
@@ -184,18 +186,6 @@ async function getChannelIdByUsername(username) {
     }
 }
 
-function displayChannelInfo(name, description, subscribers, views, creationDate) {
-    const channelInfo = document.getElementById("channelInfo");
-    channelInfo.innerHTML = `
-        <h3>${name}</h3>
-        <p>${description}</p>
-        <p>تعداد سابسکرایبرها: ${toPersianNumbers(subscribers)}</p>
-        <p>تعداد کل بازدیدها: ${toPersianNumbers(views)}</p>
-        <p>تاریخ ایجاد کانال: ${toPersianDate(creationDate)}</p>
-    `;
-    channelInfo.style.display = "block";
-}
-
 function saveSearchHistory(channelId, channelName) {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     if (!history.some(item => item.id === channelId)) {
@@ -219,120 +209,17 @@ function fetchChannel(channelId) {
     document.getElementById('fetchVideosButton').click();
 }
 
-function toPersianNumbers(input) {
-    const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-    return String(input).replace(/\d/g, (match) => persianNumbers[match]);
+function displayChannelInfo(name, description, subscribers, views, creationDate) {
+    const channelInfo = document.getElementById("channelInfo");
+    channelInfo.innerHTML = `
+        <h3>${name}</h3>
+        <p>${description}</p>
+        <p>تعداد سابسکرایبرها: ${subscribers}</p>
+        <p>تعداد کل بازدیدها: ${views}</p>
+        <p>تاریخ ایجاد کانال: ${creationDate}</p>
+    `;
+    channelInfo.style.display = "block";
 }
-
-function toPersianDate(date) {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(date).toLocaleDateString('fa-IR', options);
-}
-
-function displayVideos(videos) {
-    const videoTableContainer = document.getElementById("videoTableContainer");
-    const videoTableElement = document.getElementById("videoTable");
-
-    // اگر جدول از قبل مقداردهی شده باشد، آن را پاک کنید
-    if ($.fn.DataTable.isDataTable(videoTableElement)) {
-        $('#videoTable').DataTable().destroy();
-    }
-
-    // پاک کردن محتوای جدول
-    $('#videoTable tbody').empty();
-
-    // مقداردهی مجدد جدول
-    const videoTable = $("#videoTable").DataTable({
-        data: videos,
-        columns: [
-            { data: "title", title: "عنوان ویدیو" },
-            { data: "viewCount", title: "تعداد بازدید", render: function(data) {
-                return toPersianNumbers(data);
-            }},
-            { data: "likeCount", title: "تعداد لایک‌ها", render: function(data) {
-                return toPersianNumbers(data);
-            }},
-            { data: "commentCount", title: "تعداد کامنت‌ها", render: function(data) {
-                return toPersianNumbers(data);
-            }},
-            { data: "publishDate", title: "تاریخ انتشار", render: function(data) {
-                return toPersianDate(data);
-            }},
-            { data: "thumbnail", title: "تصویر", render: function(data) {
-                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو" onerror="this.src='default-thumbnail.jpg'">`;
-            }},
-            { data: "id", title: "پیش‌نمایش", render: function(data) {
-                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
-            }},
-        ],
-        order: [[1, "desc"]], // مرتب‌سازی بر اساس بیشترین بازدید
-        dom: 'Bfrtip',
-        buttons: [
-            {
-                extend: 'csv',
-                text: 'دانلود CSV',
-                filename: function() {
-                    return `${channelName}_videos`;
-                },
-                title: `ویدیوهای کانال ${channelName}`,
-                exportOptions: {
-                    columns: [0, 1, 2, 3, 4] // انتخاب ستون‌ها برای خروجی CSV
-                },
-                bom: true // افزودن BOM به فایل CSV
-            }
-        ],
-        language: {
-            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json" // فارسی‌سازی DataTables
-        }
-    });
-
-    videoTableContainer.style.display = "block";
-}
-
-const toggleDarkMode = () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
-};
-
-if (localStorage.getItem('darkMode') === 'true') {
-    document.body.classList.add('dark-mode');
-}
-
-document.getElementById("fetchVideosButton").addEventListener("click", async () => {
-    const channelInput = document.getElementById("channelInput").value;
-
-    if (!channelInput) {
-        alert("لطفاً شناسه یا لینک کانال را وارد کنید!");
-        return;
-    }
-
-    const loading = document.getElementById("loading");
-    const errorAlert = document.getElementById("errorAlert");
-
-    loading.style.display = "block";
-    errorAlert.style.display = "none";
-
-    try {
-        let channelId = extractChannelId(channelInput);
-
-        if (!channelId.startsWith("UC")) {
-            const channelIdFromUsername = await getChannelIdByUsername(channelId);
-            if (!channelIdFromUsername) {
-                throw new Error("کانال با این نام کاربری یافت نشد.");
-            }
-            channelId = channelIdFromUsername;
-        }
-
-        const videos = await fetchVideosWithRetry(channelId);
-        displayVideos(videos);
-    } catch (error) {
-        console.error(error);
-        errorAlert.textContent = `خطا: ${error.message}`;
-        errorAlert.style.display = "block";
-    } finally {
-        loading.style.display = "none";
-    }
-});
 
 loadApiKeys();
 displaySearchHistory();
