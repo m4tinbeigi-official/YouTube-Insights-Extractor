@@ -1,10 +1,8 @@
-// تعریف متغیرهای اصلی
 let apiKeys = [];
 let currentKeyIndex = 0;
 let channelName = "";
 let channelDescription = "";
 
-// بارگذاری کلیدهای API از فایل JSON
 async function loadApiKeys() {
     try {
         const response = await fetch('api_keys.json');
@@ -19,7 +17,6 @@ async function loadApiKeys() {
     }
 }
 
-// مدیریت کلیدهای API
 function getCurrentApiKey() {
     return apiKeys[currentKeyIndex];
 }
@@ -28,25 +25,23 @@ function switchToNextApiKey() {
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
 }
 
-// بروزرسانی نوار پیشرفت
 function updateProgress(current, total) {
-    setTimeout(() => {
-        const progressBar = document.getElementById("progressBar");
-        const progressText = document.getElementById("progressText");
-        const percent = Math.round((current / total) * 100);
-        progressBar.style.width = `${percent}%`;
-        progressBar.textContent = `${percent}%`;
-        progressText.textContent = `در حال پردازش ویدیو ${current} از ${total}`;
-    }, 0);
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    const percent = Math.round((current / total) * 100);
+    progressBar.style.width = `${percent}%`;
+    progressBar.textContent = `${percent}%`;
+    progressText.textContent = `در حال پردازش ویدیو ${current} از ${total}`;
 }
 
-// تلاش برای دریافت ویدیوها با کلیدهای متعدد API
 async function fetchVideosWithRetry(channelId) {
     let retries = apiKeys.length;
+    let videos = [];
     while (retries > 0) {
         const apiKey = getCurrentApiKey();
         try {
-            return await fetchVideos(apiKey, channelId);
+            videos = await fetchVideos(apiKey, channelId);
+            return videos;
         } catch (error) {
             console.warn(`خطا با کلید API ${apiKey}:`, error);
             switchToNextApiKey();
@@ -56,7 +51,6 @@ async function fetchVideosWithRetry(channelId) {
     throw new Error("تمام کلیدهای API شکست خوردند. لطفاً بعداً دوباره امتحان کنید.");
 }
 
-// دریافت اطلاعات کانال و ویدیوها
 async function fetchVideos(apiKey, channelId) {
     const youtubeAPI = "https://www.googleapis.com/youtube/v3";
     try {
@@ -67,21 +61,16 @@ async function fetchVideos(apiKey, channelId) {
                 key: apiKey,
             },
         });
+        channelName = channelResponse.data.items[0].snippet.title;
+        channelDescription = channelResponse.data.items[0].snippet.description;
+        const subscriberCount = channelResponse.data.items[0].statistics.subscriberCount;
+        const totalViews = channelResponse.data.items[0].statistics.viewCount;
+        const channelCreationDate = channelResponse.data.items[0].snippet.publishedAt;
 
-        const channelData = channelResponse.data.items[0];
-        channelName = channelData.snippet.title;
-        channelDescription = channelData.snippet.description;
-
-        displayChannelInfo(
-            channelName,
-            channelDescription,
-            channelData.statistics.subscriberCount,
-            channelData.statistics.viewCount,
-            channelData.snippet.publishedAt
-        );
+        displayChannelInfo(channelName, channelDescription, subscriberCount, totalViews, channelCreationDate);
         saveSearchHistory(channelId, channelName);
 
-        const uploadsPlaylistId = channelData.contentDetails.relatedPlaylists.uploads;
+        const uploadsPlaylistId = channelResponse.data.items[0].contentDetails.relatedPlaylists.uploads;
 
         let nextPageToken = "";
         const videos = [];
@@ -115,17 +104,26 @@ async function fetchVideos(apiKey, channelId) {
                 updateProgress(currentVideo, totalVideos);
 
                 const item = playlistResponse.data.items[i];
+                const videoId = item.snippet.resourceId.videoId;
+                const videoTitle = item.snippet.title;
+                const thumbnailUrl = item.snippet.thumbnails.medium.url;
+                const description = item.snippet.description;
+                const publishDate = item.snippet.publishedAt;
+
                 const stats = videoResponse.data.items[i].statistics;
+                const viewCount = stats.viewCount || 0;
+                const likeCount = stats.likeCount || 0;
+                const commentCount = stats.commentCount || 0;
 
                 videos.push({ 
-                    id: item.snippet.resourceId.videoId,
-                    title: item.snippet.title,
-                    thumbnail: item.snippet.thumbnails.medium.url,
-                    description: item.snippet.description,
-                    publishDate: item.snippet.publishedAt,
-                    viewCount: stats.viewCount || 0,
-                    likeCount: stats.likeCount || 0,
-                    commentCount: stats.commentCount || 0,
+                    id: videoId, 
+                    title: videoTitle, 
+                    thumbnail: thumbnailUrl, 
+                    description, 
+                    publishDate, 
+                    viewCount, 
+                    likeCount, 
+                    commentCount 
                 });
             }
 
@@ -141,7 +139,6 @@ async function fetchVideos(apiKey, channelId) {
     }
 }
 
-// استخراج شناسه کانال از ورودی
 function extractChannelId(input) {
     if (!input) {
         throw new Error("لطفاً شناسه یا لینک کانال را وارد کنید!");
@@ -164,7 +161,29 @@ function extractChannelId(input) {
     }
 }
 
-// نمایش اطلاعات کانال
+async function getChannelIdByUsername(username) {
+    const apiKey = getCurrentApiKey();
+    const youtubeAPI = "https://www.googleapis.com/youtube/v3";
+    try {
+        const response = await axios.get(`${youtubeAPI}/channels`, {
+            params: {
+                part: "id",
+                forHandle: username,
+                key: apiKey,
+            },
+        });
+
+        if (!response.data || !response.data.items || response.data.items.length === 0) {
+            throw new Error("کانال با این نام کاربری یافت نشد.");
+        }
+
+        return response.data.items[0].id;
+    } catch (error) {
+        console.error("خطا در دریافت شناسه کانال:", error);
+        throw new Error("خطا در دریافت اطلاعات کانال. لطفاً نام کاربری یا لینک را بررسی کنید.");
+    }
+}
+
 function displayChannelInfo(name, description, subscribers, views, creationDate) {
     const channelInfo = document.getElementById("channelInfo");
     channelInfo.innerHTML = `
@@ -177,7 +196,6 @@ function displayChannelInfo(name, description, subscribers, views, creationDate)
     channelInfo.style.display = "block";
 }
 
-// ذخیره تاریخچه جستجو
 function saveSearchHistory(channelId, channelName) {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     if (!history.some(item => item.id === channelId)) {
@@ -190,26 +208,76 @@ function saveSearchHistory(channelId, channelName) {
     displaySearchHistory();
 }
 
-// نمایش تاریخچه جستجو
 function displaySearchHistory() {
     const history = JSON.parse(localStorage.getItem('searchHistory')) || [];
     const historyList = document.getElementById('historyList');
     historyList.innerHTML = history.map(item => `<li><a href="#" onclick="fetchChannel('${item.id}')">${item.name}</a></li>`).join('');
 }
 
-// تبدیل اعداد به فارسی
+function fetchChannel(channelId) {
+    document.getElementById('channelInput').value = channelId;
+    document.getElementById('fetchVideosButton').click();
+}
+
 function toPersianNumbers(input) {
     const persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
     return String(input).replace(/\d/g, (match) => persianNumbers[match]);
 }
 
-// تبدیل تاریخ به فرمت فارسی
 function toPersianDate(date) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(date).toLocaleDateString('fa-IR', options);
 }
 
-// مدیریت حالت تاریک
+function displayVideos(videos) {
+    const videoTableContainer = document.getElementById("videoTableContainer");
+    const videoTable = $("#videoTable").DataTable({
+        data: videos,
+        columns: [
+            { data: "title", title: "عنوان ویدیو" },
+            { data: "viewCount", title: "تعداد بازدید", render: function(data) {
+                return toPersianNumbers(data);
+            }},
+            { data: "likeCount", title: "تعداد لایک‌ها", render: function(data) {
+                return toPersianNumbers(data);
+            }},
+            { data: "commentCount", title: "تعداد کامنت‌ها", render: function(data) {
+                return toPersianNumbers(data);
+            }},
+            { data: "publishDate", title: "تاریخ انتشار", render: function(data) {
+                return toPersianDate(data);
+            }},
+            { data: "thumbnail", title: "تصویر", render: function(data) {
+                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو" onerror="this.src='default-thumbnail.jpg'">`;
+            }},
+            { data: "id", title: "پیش‌نمایش", render: function(data) {
+                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
+            }},
+        ],
+        order: [[1, "desc"]],
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'csv',
+                text: 'دانلود CSV',
+                filename: function() {
+                    return `${channelName}_videos`;
+                },
+                title: `ویدیوهای کانال ${channelName}`,
+                exportOptions: {
+                    columns: [0, 1, 2, 3, 4]
+                },
+                bom: true
+            }
+        ],
+        language: {
+            url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/fa.json"
+        }
+    });
+
+    videoTableContainer.style.display = "block";
+}
+
 const toggleDarkMode = () => {
     document.body.classList.toggle('dark-mode');
     localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
@@ -219,6 +287,41 @@ if (localStorage.getItem('darkMode') === 'true') {
     document.body.classList.add('dark-mode');
 }
 
-// شروع بارگذاری اولیه
+document.getElementById("fetchVideosButton").addEventListener("click", async () => {
+    const channelInput = document.getElementById("channelInput").value;
+
+    if (!channelInput) {
+        alert("لطفاً شناسه یا لینک کانال را وارد کنید!");
+        return;
+    }
+
+    const loading = document.getElementById("loading");
+    const errorAlert = document.getElementById("errorAlert");
+
+    loading.style.display = "block";
+    errorAlert.style.display = "none";
+
+    try {
+        let channelId = extractChannelId(channelInput);
+
+        if (!channelId.startsWith("UC")) {
+            const channelIdFromUsername = await getChannelIdByUsername(channelId);
+            if (!channelIdFromUsername) {
+                throw new Error("کانال با این نام کاربری یافت نشد.");
+            }
+            channelId = channelIdFromUsername;
+        }
+
+        const videos = await fetchVideosWithRetry(channelId);
+        displayVideos(videos);
+    } catch (error) {
+        console.error(error);
+        errorAlert.textContent = `خطا: ${error.message}`;
+        errorAlert.style.display = "block";
+    } finally {
+        loading.style.display = "none";
+    }
+});
+
 loadApiKeys();
 displaySearchHistory();
