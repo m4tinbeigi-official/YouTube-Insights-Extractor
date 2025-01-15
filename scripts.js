@@ -105,7 +105,6 @@ async function fetchVideos(apiKey, channelId) {
                 const item = playlistResponse.data.items[i];
                 const videoId = item.snippet.resourceId.videoId;
                 const videoTitle = item.snippet.title;
-                const thumbnailUrl = item.snippet.thumbnails.medium.url;
                 const description = item.snippet.description;
                 const publishDate = item.snippet.publishedAt;
 
@@ -117,7 +116,6 @@ async function fetchVideos(apiKey, channelId) {
                 videos.push({ 
                     id: videoId, 
                     title: videoTitle, 
-                    thumbnail: thumbnailUrl, 
                     description, 
                     publishDate, 
                     viewCount, 
@@ -247,11 +245,8 @@ function displayVideos(videos) {
             { data: "publishDate", title: "تاریخ انتشار", render: function(data) {
                 return new Date(data).toLocaleDateString('fa-IR');
             }},
-            { data: "thumbnail", title: "تصویر", render: function(data) {
-                return `<img src="${data}" class="video-thumbnail" alt="تصویر ویدیو" onerror="this.src='default-thumbnail.jpg'">`;
-            }},
-            { data: "id", title: "پیش‌نمایش", render: function(data) {
-                return `<iframe width="200" height="100" src="https://www.youtube.com/embed/${data}" frameborder="0" allowfullscreen onerror="this.src='error.html'"></iframe>`;
+            { data: "id", title: "لینک ویدیو", render: function(data) {
+                return `<a href="https://www.youtube.com/watch?v=${data}" target="_blank">مشاهده ویدیو</a>`;
             }},
         ],
         order: [[1, "desc"]],
